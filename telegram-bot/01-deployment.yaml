@@ -1,0 +1,124 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegram-bot
+  namespace: ai-chatbot
+  labels:
+    app: telegram-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telegram-bot
+  template:
+    metadata:
+      labels:
+        app: telegram-bot
+    spec:
+      initContainers:
+      - name: git-clone
+        image: alpine/git:latest
+        command: ['sh', '-c']
+        args:
+        - |
+          if [ ! -d /app/.git ]; then
+            git clone https://github.com/KIT-DS/ai-chatbot-infra.git /app
+          else
+            cd /app && git pull
+          fi
+        volumeMounts:
+        - name: bot-code
+          mountPath: /app
+      containers:
+      - name: telegram-bot
+        image: python:3.11-slim
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            pip install -r /app/requirements.txt && \
+            cd /app && python -m bot.main
+        workingDir: /app
+        ports:
+        - containerPort: 8080
+          name: webhook
+          protocol: TCP
+        env:
+        - name: TELEGRAM_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: telegram-bot-secrets
+              key: TELEGRAM_BOT_TOKEN
+        - name: N8N_WEBHOOK_USER
+          valueFrom:
+            secretKeyRef:
+              name: telegram-bot-secrets
+              key: N8N_WEBHOOK_USER
+        - name: N8N_WEBHOOK_PASS
+          valueFrom:
+            secretKeyRef:
+              name: telegram-bot-secrets
+              key: N8N_WEBHOOK_PASS
+        - name: N8N_QUERY_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: telegram-bot-secrets
+              key: N8N_QUERY_WEBHOOK_URL
+        - name: N8N_INGEST_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: telegram-bot-secrets
+              key: N8N_INGEST_WEBHOOK_URL
+        - name: FIRST_ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: telegram-bot-secrets
+              key: FIRST_ADMIN_USERNAME
+        - name: WEBHOOK_SERVER_HOST
+          value: "0.0.0.0"
+        - name: WEBHOOK_SERVER_PORT
+          value: "8080"
+        volumeMounts:
+        - name: bot-code
+          mountPath: /app
+        - name: bot-data
+          mountPath: /app/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: bot-code
+        emptyDir: {}
+      - name: bot-data
+        persistentVolumeClaim:
+          claimName: telegram-bot-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: telegram-bot-data
+  namespace: ai-chatbot
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
