@@ -1,0 +1,24 @@
+# Secrets (DO NOT COMMIT)
+k8s/base/01-secrets.yaml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/

@@ -1,0 +1,21 @@
+---
+# Dev environment patches
+# Override n8n resources for dev
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  namespace: ai-chatbot
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: n8n
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"

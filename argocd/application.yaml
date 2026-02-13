@@ -1,0 +1,56 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-chatbot-infra
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/YOUR_ORG/ai-chatbot-infra.git'  # CHANGE THIS
+    targetRevision: main
+    path: k8s/base
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: ai-chatbot
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+---
+# Optional: ApplicationSet for multiple environments
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ai-chatbot
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: dev
+        namespace: ai-chatbot
+      # - env: staging
+      #   namespace: ai-chatbot-staging
+      # - env: prod
+      #   namespace: ai-chatbot-prod
+  template:
+    metadata:
+      name: 'ai-chatbot-{{env}}'
+    spec:
+      project: default
+      source:
+        repoURL: 'https://github.com/YOUR_ORG/ai-chatbot-infra.git'  # CHANGE THIS
+        targetRevision: main
+        path: 'k8s/overlays/{{env}}'
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
