@@ -1,0 +1,203 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        400
+      ],
+      "id": "ac5743a9-4557-44fc-b3f9-af847e0285d3",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "iTL7fEVmfO2ZvVkd",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "avc-1",
+          "mode": "list",
+          "cachedResultName": "avc-1"
+        },
+        "options": {
+          "pineconeNamespace": "={{ $('Question Classification').item.json.output[0].content[0].text.parseJson().intent}}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        256
+      ],
+      "id": "2aca1d54-b1c7-4361-b194-036bcfb19bee",
+      "name": "pinecone search",
+      "credentials": {
+        "pineconeApi": {
+          "id": "ytbq6XkM8Sb1ciKO",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=### Вопрос пользователя:\n{{ $('Webhook').item.json.body.query }}",
+        "options": {
+          "systemMessage": "### Роль\nТы — экспертный ИИ-ассистент для компании \"AVC Group\", специализирующийся на анализе предоставленных данных. Твоя задача: давать точные и краткие ответы, основываясь исключительно на предоставленном контексте.\n\n### Инструкции\n1. Приоритет данных: Используй только ту информацию, которая содержится в блоке \"Контекст\". \n2. Ограничения: Если в контексте нет прямого ответа на вопрос пользователя, честно ответь: «К сожалению, в моей базе данных нет информации по этому вопросу». Не пытайся выдумывать факты или использовать внешние знания.\n3. Стиль: Отвечай вежливо, профессионально и структурированно.\n4. Форматирование: Используй Markdown (жирный шрифт, списки), чтобы ответ было удобно читать.\n\n### Для контекста используй инструмент \"Answer questions with a vector store\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        736,
+        -144
+      ],
+      "id": "c1ac11b8-3019-4516-8b27-43f298ccf4d0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        32
+      ],
+      "id": "165b0575-d633-42ed-99a2-869174fa7947",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "iTL7fEVmfO2ZvVkd",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Search the company database for information",
+        "topK": 5
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        784,
+        96
+      ],
+      "id": "e3f17064-dd73-4e77-8619-c33359c563a7",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        928,
+        272
+      ],
+      "id": "44f07676-1e89-468a-a519-d9a2d174f60a",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "iTL7fEVmfO2ZvVkd",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "pinecone search",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pinecone search": {
+      "ai_tool": [
+        []
+      ],
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0301fa6956b5d22233a011bfd59ad48aab3c599700a993d1fcc101f75fef8249"
+  }
+}
