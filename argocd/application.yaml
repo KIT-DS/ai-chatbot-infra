@@ -7,7 +7,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/YOUR_ORG/ai-chatbot-infra.git'  # CHANGE THIS
+    repoURL: 'https://github.com/KIT-DS/ai-chatbot-infra.git'  # CHANGE THIS
     targetRevision: main
     path: k8s/base
   destination:
@@ -42,7 +42,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: 'https://github.com/YOUR_ORG/ai-chatbot-infra.git'  # CHANGE THIS
+        repoURL: 'https://github.com/KIT-DS/ai-chatbot-infra.git'  # CHANGE THIS
         targetRevision: main
         path: 'k8s/overlays/{{env}}'
       destination:
