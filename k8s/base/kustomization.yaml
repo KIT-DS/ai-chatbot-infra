@@ -5,7 +5,7 @@ namespace: ai-chatbot
 
 resources:
 - 00-namespace.yaml
-- 01-secrets.yaml
+# - 01-secrets.yaml
 - 02-postgres.yaml
 - 03-n8n.yaml
 # - 04-gitlab-optional.yaml  # Uncomment if you need GitLab
