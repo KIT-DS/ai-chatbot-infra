@@ -1,0 +1,8 @@
+test.json
+test.py
+test_formatting.py
+bot/
+data/
+requirements.txt
+*.pyc
+__pycache__/
