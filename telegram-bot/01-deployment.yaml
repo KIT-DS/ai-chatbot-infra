@@ -37,9 +37,9 @@ spec:
         args:
           - -c
           - |
-            pip install -r /app/requirements.txt && \
-            cd /app && python -m bot.main
-        workingDir: /app
+            pip install -r /app/telegram-bot/requirements.txt && \
+            cd /app/telegram-bot && python -m bot.main
+        workingDir: /app/telegram-bot
         ports:
         - containerPort: 8080
           name: webhook
